@@ -48,7 +48,7 @@ export default function HomePage() {
     },
   ];
 
-  console.log("data:", data);
+  // console.log("data:", data);
 
   return (
     <div className="max-w-[1920px] flex flex-col gap-10">

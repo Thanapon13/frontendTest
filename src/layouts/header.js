@@ -8,7 +8,7 @@ export default function Header() {
   const [openLogin, setOpenLogin] = useState(false);
   return (
     <>
-      <div className="max-w-[1920px] h-20 bg-[#FFFFFF] flex items-center justify-center gap-200">
+      <div className="max-w-[1920px] h-20 bg-[#FFFFFF] flex items-center justify-center gap-200 shadow-lg">
         <div className="w-[90%] flex items-center">
           <div className="w-full">
             <Link to="/">
