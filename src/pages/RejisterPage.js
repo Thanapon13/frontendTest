@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { RiImageAddFill, RiLockPasswordFill } from "react-icons/ri";
+import {
+  RiImageAddFill,
+  RiLockPasswordFill,
+  RiEyeFill,
+  RiEyeCloseFill,
+} from "react-icons/ri";
 import { MdOutlineMail } from "react-icons/md";
 import { GrView } from "react-icons/gr";
 import { MdDelete } from "react-icons/md";
-
 import Modal from "../components/Modal";
 import { toast } from "react-toastify";
 import InputRejister from "../components/InputRejister";
+import SelectRejister from "../components/SelectRejister";
 
 export default function RejisterPage() {
   const inputEl = useRef();
@@ -17,6 +22,8 @@ export default function RejisterPage() {
   const imageTypes = ["image/png", "image/jpeg"];
   const [arrayImageURL, setArrayImageURL] = useState([]);
   // console.log("arrayImageURL:", arrayImageURL);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmedPassword, setShowConfirmedPassword] = useState(false);
 
   const countryData = [
     { name: "Thailand", code: "TH" },
@@ -86,6 +93,42 @@ export default function RejisterPage() {
     { country: "Japan", code: "+81" },
   ];
 
+  const provincesData = [
+    {
+      name: "Chonburi",
+    },
+    {
+      name: "Chiang Rai",
+    },
+    {
+      name: "Chiang Mai",
+    },
+  ];
+
+  const districtData = [
+    {
+      name: "Akat Amnuai",
+    },
+    {
+      name: "Amphawa",
+    },
+    {
+      name: "Ao Luek",
+    },
+  ];
+
+  const cityDistrictData = [
+    {
+      name: "Akat Amnuai",
+    },
+    {
+      name: "Amphawa",
+    },
+    {
+      name: "Ao Luek",
+    },
+  ];
+
   const [input, setInput] = useState({
     email: "",
     password: "",
@@ -98,12 +141,13 @@ export default function RejisterPage() {
     phoneNumber: "",
     website: "",
     address: "",
-    StateProvince: "",
-    SubDistrict: "",
-    CityDistrict: "",
+    stateProvince: "",
+    subDistrict: "",
+    cityDistrict: "",
     zipCode: "",
+    image: "",
   });
-  console.log("input:", input);
+  // console.log("input:", input);
 
   const handleChangeInput = e => {
     const { name, value } = e.target;
@@ -159,6 +203,11 @@ export default function RejisterPage() {
       }
     }
     setFile(cloneFile);
+
+    setInput(prevInput => ({
+      ...prevInput,
+      image: cloneFile,
+    }));
   };
 
   const deleteImg = idx => {
@@ -182,6 +231,51 @@ export default function RejisterPage() {
     // console.log("newImageUrls:", newImageUrls);
     setArrayImageURL(newImageUrls);
   }, [file]);
+
+  const handleRegister = async e => {
+    e.preventDefault();
+
+    try {
+      if (input) {
+        const imageDataUrl =
+          input.image[0]?.image && URL.createObjectURL(input.image[0]?.image);
+
+        const userWithoutImage = { ...input };
+        delete userWithoutImage.image;
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...userWithoutImage, image: imageDataUrl })
+        );
+
+        setInput({
+          email: "",
+          password: "",
+          confirmedPassword: "",
+          companyName: "",
+          taxId: "",
+          fullName: "",
+          country: "",
+          countryPhoneNumber: "",
+          phoneNumber: "",
+          website: "",
+          address: "",
+          stateProvince: "",
+          subDistrict: "",
+          cityDistrict: "",
+          zipCode: "",
+          image: "",
+        });
+        setArrayImageURL([]);
+
+        await toast.success("sucess register. please login to continue");
+      } else {
+        alert("Please enter both username and password.");
+      }
+    } catch (err) {
+      console.log("err");
+    }
+  };
 
   return (
     <div className="w-full h-full flex justify-center items-start py-10">
@@ -243,7 +337,10 @@ export default function RejisterPage() {
         </div>
 
         {/* bottom form input */}
-        <form className="w-full h-full flex flex-col flex-wrap gap-4">
+        <form
+          className="w-full h-full flex flex-col flex-wrap gap-4"
+          onSubmit={handleRegister}
+        >
           {/* TOP  */}
           <div className="w-full h-full pb-10 flex flex-wrap justify-between items-start border-b-2">
             <div>
@@ -260,25 +357,27 @@ export default function RejisterPage() {
 
             <div>
               <InputRejister
-                title="Password"
-                icon={<RiLockPasswordFill className="text-[24px]" />}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter your password"
                 onChange={handleChangeInput}
                 value={input.password}
+                check="check"
+                showPassword={showPassword}
+                onClick={() => setShowPassword(!showPassword)}
               />
             </div>
 
             <div>
               <InputRejister
-                title="Confirmed Password"
-                icon={<RiLockPasswordFill className="text-[24px]" />}
-                type="password"
+                type={showConfirmedPassword ? "text" : "password"}
                 name="confirmedPassword"
                 placeholder="Enter your password"
                 onChange={handleChangeInput}
                 value={input.confirmedPassword}
+                check="check"
+                showConfirmedPassword={showConfirmedPassword}
+                onClick={() => setShowConfirmedPassword(!showConfirmedPassword)}
               />
             </div>
           </div>
@@ -330,19 +429,13 @@ export default function RejisterPage() {
                     Country
                   </label>
 
-                  <select
-                    className="w-[360px] h-[44px] flex items-center justify-start gap-2 bg-white border-2 p-2"
+                  <SelectRejister
                     name="country"
                     onChange={handleChangeInput}
                     value={input.country}
-                  >
-                    <option value="">Choose Province</option>
-                    {countryData?.map((el, idx) => (
-                      <option key={idx} value={el.id}>
-                        {el.name}
-                      </option>
-                    ))}
-                  </select>
+                    data={countryData}
+                    title="Choose Country"
+                  />
                 </div>
 
                 <div>
@@ -350,7 +443,7 @@ export default function RejisterPage() {
                     Phone Number
                   </label>
 
-                  <div className="w-[360px] flex gap-2">
+                  <div className="md:w-[360px] w-full flex gap-2">
                     <select
                       className="w-[93px] h-[44px] flex items-center justify-start gap-2 bg-white border-2 p-2"
                       onChange={handleChangeInput}
@@ -362,16 +455,13 @@ export default function RejisterPage() {
                         <option key={idx}>{el?.code}</option>
                       ))}
                     </select>
-                    <div className="w-[259px] h-[44px] flex p-2  bg-white border-2">
-                      <input
-                        type="text"
-                        name="phoneNumber"
-                        className={`w-full text-gray-900 text-base outline-none border-none`}
-                        placeholder="Enter Phone number"
-                        onChange={handleChangeInput}
-                        value={input.phoneNumber}
-                      />
-                    </div>
+
+                    <InputRejister
+                      name="phoneNumber"
+                      placeholder="Enter Phone number"
+                      onChange={handleChangeInput}
+                      value={input.phoneNumber}
+                    />
                   </div>
                 </div>
 
@@ -388,7 +478,7 @@ export default function RejisterPage() {
 
               {/* bottom */}
               <div className="w-full h-full flex flex-wrap justify-between items-start gap-6 mt-2">
-                <div className="w-[28%] h-full flex flex-col gap-2">
+                <div className="md:w-[28%] w-full flex flex-col gap-2">
                   <label className="block mb-2 text-base font-medium text-[#000000]">
                     Address
                   </label>
@@ -397,72 +487,54 @@ export default function RejisterPage() {
                     type="text"
                     name="address"
                     placeholder="Enter Address"
-                    className="w-[360px] h-[136px] border-2 outline-none resize-none p-2"
+                    className="md:w-[360px] md:h-[136px] w-full h-full border-2 outline-none resize-none p-2"
                     onChange={handleChangeInput}
                     value={input.address}
                   />
                 </div>
 
                 <div className="w-[825px] h-full flex flex-wrap justify-between items-start gap-6">
-                  <div className="w-full  flex flex-wrap justify-between items-start gap-6">
+                  <div className="w-full  flex flex-wrap justify-between items-start gap-6 ml-2">
                     <div>
                       <label className="block mb-2 text-base font-medium text-[#000000]">
                         State/Province
                       </label>
 
-                      <div className="w-[360px] h-[44px]">
-                        <select
-                          className="w-full h-full flex items-center justify-start gap-2 bg-white border-2 p-2"
-                          onChange={handleChangeInput}
-                          name="countryPhoneNumber"
-                          value={input.countryPhoneNumber}
-                        >
-                          <option>Choose Province</option>
-                          {countryPhoneNumbers?.map((el, idx) => (
-                            <option key={idx}>{el?.code}</option>
-                          ))}
-                        </select>
-                      </div>
+                      <SelectRejister
+                        onChange={handleChangeInput}
+                        name="stateProvince"
+                        value={input.stateProvince}
+                        data={provincesData}
+                        title="Choose Province"
+                      />
                     </div>
 
                     <div>
                       <label className="block mb-2 text-base font-medium text-[#000000]">
-                        State/Province
+                        Sub-District
                       </label>
 
-                      <div className="w-[360px] h-[44px]">
-                        <select
-                          className="w-full h-full flex items-center justify-start gap-2 bg-white border-2 p-2"
-                          onChange={handleChangeInput}
-                          name="countryPhoneNumber"
-                          value={input.countryPhoneNumber}
-                        >
-                          <option>Choose Province</option>
-                          {countryPhoneNumbers?.map((el, idx) => (
-                            <option key={idx}>{el?.code}</option>
-                          ))}
-                        </select>
-                      </div>
+                      <SelectRejister
+                        onChange={handleChangeInput}
+                        name="subDistrict"
+                        value={input.subDistrict}
+                        data={districtData}
+                        title="Choose Sub-District"
+                      />
                     </div>
 
                     <div>
                       <label className="block mb-2 text-base font-medium text-[#000000]">
-                        State/Province
+                        City/District
                       </label>
 
-                      <div className="w-[360px] h-[44px]">
-                        <select
-                          className="w-full h-full flex items-center justify-start gap-2 bg-white border-2 p-2"
-                          onChange={handleChangeInput}
-                          name="countryPhoneNumber"
-                          value={input.countryPhoneNumber}
-                        >
-                          <option>Choose Province</option>
-                          {countryPhoneNumbers?.map((el, idx) => (
-                            <option key={idx}>{el?.code}</option>
-                          ))}
-                        </select>
-                      </div>
+                      <SelectRejister
+                        onChange={handleChangeInput}
+                        name="cityDistrict"
+                        value={input.cityDistrict}
+                        data={cityDistrictData}
+                        title="Choose District"
+                      />
                     </div>
 
                     <div>
